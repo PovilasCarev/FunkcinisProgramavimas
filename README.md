@@ -23,7 +23,8 @@
 ## BNF Grammar for a Vinyl Collection System
 
 ```bnf
-<command> ::= <action> <vinyl> | <view_command> <criteria>
+<command> ::= <action> <vinyl> | <view_command> <criteria> | <subcommand>
+<subcommand> ::= <command> ";" <command>
 <action> ::= "Add" | "Remove" | "Update"
 <vinyl> ::= <artist> "_" <title> "_" <year> "_" <genre>
 <artist> ::= <name>
@@ -31,6 +32,12 @@
 <year> ::= <number>
 <genre> ::= "Rock" | "Pop" | "Jazz" | "Blues" | "Classical" | "Hip-Hop" | "Electronic" | "Folk" | "Grunge"
 <name> ::= <char> {<char>}
+<char> ::= [A-Za-z]
+<number> ::= <digit> <digit> <digit> <digit>
+<digit> ::= [0-9]
+<view_command> ::= "View"
+<criteria> ::= "all records" | "in" <genre> | "by" <artist> | "released in" <year>
+
 <char> ::= [A-Za-z]
 <number> ::= <digit> <digit> <digit> <digit>
 <digit> ::= [0-9]
