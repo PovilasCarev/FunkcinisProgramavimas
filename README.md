@@ -37,8 +37,3 @@
 <digit> ::= [0-9]
 <view_command> ::= "View"
 <criteria> ::= "all records" | "in" <genre> | "by" <artist> | "released in" <year>
-<char> ::= [A-Za-z]
-<number> ::= <digit> <digit> <digit> <digit>
-<digit> ::= [0-9]
-<view_command> ::= "View"
-<criteria> ::= "all records" | "in" <genre> | "by" <artist> | "released in" <year>
