@@ -1,0 +1,16 @@
+Test suite fp2024-test: RUNNING...
+Tests
+  Lib2 tests
+    Parsing case 1 - Empty input:                        OK
+    Parsing case 2 - Single character input:             OK
+    Parsing case 3 - Valid Add command:                  OK
+    Parsing case 4 - Invalid Add command (missing info): OK
+    Parsing case 5 - Valid View all command:             OK
+    Parsing case 6 - Valid Remove command:               OK
+    StateTransition - Add Vinyl to an empty state:       OK
+    StateTransition - Remove Vinyl from state:           OK
+    StateTransition - View all records in state:         OK
+
+All 9 tests passed (0.01s)
+Test suite fp2024-test: PASS
+Test suite logged to: /workspaces/fp-2024/dist-newstyle/build/x86_64-linux/ghc-9.4.8/fp2024-0.1.0.0/t/fp2024-test/test/fp2024-0.1.0.0-fp2024-test.log

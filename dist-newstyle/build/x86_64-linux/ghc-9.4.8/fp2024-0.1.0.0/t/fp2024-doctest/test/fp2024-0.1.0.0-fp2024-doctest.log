@@ -1,0 +1,12 @@
+Test suite fp2024-doctest: RUNNING...
+
+src/Lessons/Lesson01.hs:69:6: warning: [-Wname-shadowing]
+    This binding for ‘t’ shadows the existing binding
+      defined at src/Lessons/Lesson01.hs:51:1
+
+src/Lessons/Lesson01.hs:93:7: warning: [-Wname-shadowing]
+    This binding for ‘b’ shadows the existing binding
+      defined at src/Lessons/Lesson01.hs:23:1
+Examples: 0  Tried: 0  Errors: 0  Failures: 0
+Test suite fp2024-doctest: PASS
+Test suite logged to: /workspaces/fp-2024/dist-newstyle/build/x86_64-linux/ghc-9.4.8/fp2024-0.1.0.0/t/fp2024-doctest/test/fp2024-0.1.0.0-fp2024-doctest.log
