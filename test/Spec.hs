@@ -1,12 +1,8 @@
-{-# LANGUAGE ImportQualifiedPost #-}
-
-import Lib1 qualified
-import Lib2
 import Lib2 (Query (..), State (..), Vinyl (..), emptyState, parseQuery, stateTransition)
 import Test.Tasty (TestTree, defaultMain, testGroup)
-import Test.Tasty.HUnit (testCase, (@?=))
+import Test.Tasty.HUnit (assertFailure, testCase, (@?=))
 
-main :: IO ()
+main :: Prelude.IO ()
 main = defaultMain tests
 
 tests :: TestTree
@@ -16,36 +12,38 @@ unitTests :: TestTree
 unitTests =
   testGroup
     "Lib2 tests"
-    [ -- Existing test cases
-      testCase "Parsing case 1 - Empty input" $
-        Lib2.parseQuery "" @?= (Left "Unknown command"),
-      testCase "Parsing case 2 - Single character input" $
-        Lib2.parseQuery "o" @?= (Left "Unknown command"),
-      -- New test cases for parseQuery
-      testCase "Parsing case 3 - Valid Add command" $
-        parseQuery "Add Artist_Title_2023_Genre" @?= Right (Add (Vinyl "Artist" "Title" 2023 "Genre")),
-      testCase "Parsing case 4 - Invalid Add command (missing info)" $
-        parseQuery "Add Artist_Title__Genre" @?= Left "Invalid year",
-      testCase "Parsing case 5 - Valid View all command" $
-        parseQuery "View all records" @?= Right ViewAll,
-      testCase "Parsing case 6 - Valid Remove command" $
-        parseQuery "Remove Artist_Title_2023_Genre" @?= Right (Remove (Vinyl "Artist" "Title" 2023 "Genre")),
-      -- New test cases for stateTransition
-      testCase "StateTransition - Add Vinyl to an empty state" $ do
-        let vinyl = Vinyl "Artist" "Title" 2023 "Genre"
-            result = stateTransition emptyState (Add vinyl)
+    [ -- Parsing tests
+      testCase "Parsing case 1 - Empty input" Prelude.$
+        Lib2.parseQuery "" @?= Prelude.Left "Unknown command",
+      testCase "Parsing case 2 - Single character input" Prelude.$
+        Lib2.parseQuery "o" @?= Prelude.Left "Unknown command",
+      testCase "Parsing case 3 - Valid Add command" Prelude.$
+        Lib2.parseQuery "Add Artist_Title_2023_Genre" @?= Prelude.Right (Lib2.Add (Lib2.Vinyl "Artist" "Title" 2023 "Genre")),
+      testCase "Parsing case 4 - Invalid Add command (missing info)" Prelude.$
+        Lib2.parseQuery "Add Artist_Title__Genre" @?= Prelude.Left "Invalid year",
+      testCase "Parsing case 5 - Valid View all command" Prelude.$
+        Lib2.parseQuery "View all records" @?= Prelude.Right Lib2.ViewAll,
+      testCase "Parsing case 6 - Valid Remove command" Prelude.$
+        Lib2.parseQuery "Remove Artist_Title_2023_Genre" @?= Prelude.Right (Lib2.Remove (Lib2.Vinyl "Artist" "Title" 2023 "Genre")),
+      -- State transition tests
+      testCase "StateTransition - Add Vinyl to an empty state" Prelude.$ do
+        let vinyl = Lib2.Vinyl "Artist" "Title" 2023 "Genre"
+            result = Lib2.stateTransition Lib2.emptyState (Lib2.Add vinyl)
         case result of
-          Right (_, newState) -> vinylCollection newState @?= [vinyl],
-      testCase "StateTransition - Remove Vinyl from state" $ do
-        let vinyl = Vinyl "Artist" "Title" 2023 "Genre"
-            state = State [vinyl]
-            result = stateTransition state (Remove vinyl)
+          Prelude.Right (_, newState) -> vinylCollection newState @?= [vinyl]
+          _ -> assertFailure "Expected Right result with new state",
+      testCase "StateTransition - Remove Vinyl from state" Prelude.$ do
+        let vinyl = Lib2.Vinyl "Artist" "Title" 2023 "Genre"
+            state = Lib2.State [vinyl]
+            result = Lib2.stateTransition state (Lib2.Remove vinyl)
         case result of
-          Right (_, newState) -> vinylCollection newState @?= [],
-      testCase "StateTransition - View all records in state" $ do
-        let vinyl = Vinyl "Artist" "Title" 2023 "Genre"
-            state = State [vinyl]
-            result = stateTransition state ViewAll
+          Prelude.Right (_, newState) -> vinylCollection newState @?= []
+          _ -> assertFailure "Expected Right result with empty state",
+      testCase "StateTransition - View all records in state" Prelude.$ do
+        let vinyl = Lib2.Vinyl "Artist" "Title" 2023 "Genre"
+            state = Lib2.State [vinyl]
+            result = Lib2.stateTransition state Lib2.ViewAll
         case result of
-          Right (Just output, _) -> output @?= show [vinyl]
+          Prelude.Right (Prelude.Just output, _) -> output @?= Prelude.show [vinyl]
+          _ -> assertFailure "Expected Right result with output showing vinyl records"
     ]
