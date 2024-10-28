@@ -15,6 +15,7 @@ import Data.Char (isDigit, isSpace)
 import Data.List (isPrefixOf)
 
 -- | Represents different types of user queries according to the grammar.
+-- <command> ::= <action> <vinyl> | <view_command> <criteria>
 data Query
   = Add Vinyl
   | Remove Vinyl
@@ -27,11 +28,12 @@ data Query
   deriving (Eq, Show)
 
 -- | Vinyl record data.
+-- <vinyl> ::= <artist> "_" <title> "_" <year> "_" <genre>
 data Vinyl = Vinyl
-  { vinylArtist :: String,
-    title :: String,
-    vinylYear :: Int,
-    vinylGenre :: String
+  { vinylArtist :: String, -- <artist> ::= <name>
+    title :: String, -- <title> ::= <name>
+    vinylYear :: Int, -- <year> ::= <number>
+    vinylGenre :: String -- <genre> ::= "Rock" | "Pop" | ...
   }
   deriving (Eq, Show)
 
@@ -68,12 +70,13 @@ orElse (Right x) _ = Right x
 orElse _ r = r
 
 and2 :: (String -> Either String (a, String)) -> (String -> Either String (b, String)) -> String -> Either String ((a, b), String)
-and2 p1 p2 input = do
-  (res1, rest1) <- p1 input
-  (res2, rest2) <- p2 rest1
-  Right ((res1, res2), rest2)
+and2 p1 p2 input =
+  p1 input >>= \(res1, rest1) ->
+    p2 rest1 >>= \(res2, rest2) ->
+      Right ((res1, res2), rest2)
 
 -- | Parses user's input into a Query.
+-- <command> ::= <action> <vinyl> | <view_command> <criteria>
 parseQuery :: String -> Either String Query
 parseQuery input
   | "Add " `isPrefixOf` input = parseAdd (drop 4 input)
@@ -83,24 +86,29 @@ parseQuery input
   | otherwise = Left "Unknown command"
 
 -- | Parsing an 'Add' command with a vinyl record.
+-- <action> ::= "Add"
 parseAdd :: String -> Either String Query
 parseAdd input = case parseVinyl input of
   Left err -> Left err
   Right (vinyl, _) -> Right (Add vinyl) -- Only use the Vinyl, ignore the rest
 
 -- | Parsing a 'Remove' command with a vinyl record.
+-- <action> ::= "Remove"
 parseRemove :: String -> Either String Query
 parseRemove input = case parseVinyl input of
   Left err -> Left err
   Right (vinyl, _) -> Right (Remove vinyl) -- Only use the Vinyl, ignore the rest
 
 -- | Parsing an 'Update' command with a vinyl record.
+-- <action> ::= "Update"
 parseUpdate :: String -> Either String Query
 parseUpdate input = case parseVinyl input of
   Left err -> Left err
   Right (vinyl, _) -> Right (Update vinyl) -- Only use the Vinyl, ignore the rest
 
 -- | Parsing a 'View' command with criteria.
+-- <view_command> ::= "View"
+-- <criteria> ::= "all records" | "in" <genre> | "by" <artist> | "released in" <year>
 parseView :: String -> Either String Query
 parseView input
   | input == "all records" = Right ViewAll
@@ -114,20 +122,23 @@ parseView input
   | otherwise = Left "Invalid view command"
 
 -- | Parsing a vinyl record from the input.
+-- <vinyl> ::= <artist> "_" <title> "_" <year> "_" <genre>
 parseVinyl :: String -> Either String (Vinyl, String)
-parseVinyl input = do
-  (artist, rest1) <- spanChar '_' input
-  (vinylTitle, rest2) <- spanChar '_' rest1
-  (yearStr, rest3) <- spanChar '_' rest2
-  (parsedGenre, rest4) <- Right (span (/= '_') rest3)
-  parsedYear <- case reads yearStr of
-    [(y, "")] -> Right y
-    _ -> Left "Invalid year"
-  Right (Vinyl artist vinylTitle parsedYear parsedGenre, rest4)
+parseVinyl input =
+  let (artist, rest1) = break (== '_') input -- Split by the first underscore for artist
+      rest1' = drop 1 rest1 -- Drop the underscore
+      (vinylTitle, rest2) = break (== '_') rest1' -- Split by the next underscore for title
+      rest2' = drop 1 rest2 -- Drop the underscore
+      (yearStr, rest3) = break (== '_') rest2' -- Split by the next underscore for year
+      rest3' = drop 1 rest3 -- Drop the underscore for the genre
+      genre = rest3'
+   in case reads yearStr of
+        [(y, "")] | length yearStr == 4 -> Right (Vinyl artist vinylTitle y genre, "")
+        _ -> Left "Invalid year"
 
--- | Helper to span until a character is found.
+-- | Helper to span until a character is found, allowing spaces and special characters.
 spanChar :: Char -> String -> Either String (String, String)
-spanChar c input = case span (/= c) input of
+spanChar c input = case span (\x -> x /= c) input of
   (parsed, rest)
     | null rest -> Left $ "Expected '" ++ [c] ++ "' but found end of input"
     | otherwise -> Right (parsed, drop 1 rest)
@@ -148,6 +159,12 @@ stateTransition state query = case query of
   Remove vinyl ->
     let newCollection = filter (/= vinyl) (vinylCollection state)
      in Right (Just "Vinyl removed", state {vinylCollection = newCollection})
+  Update vinyl ->
+    let updatedCollection = map (\v -> if vinylArtist v == vinylArtist vinyl && title v == title vinyl then vinyl else v) (vinylCollection state)
+        recordExists = any (\v -> vinylArtist v == vinylArtist vinyl && title v == title vinyl) (vinylCollection state)
+     in if recordExists
+          then Right (Just "Vinyl updated", state {vinylCollection = updatedCollection})
+          else Left "Vinyl record not found for update"
   ViewAll -> Right (Just $ show (vinylCollection state), state)
   ViewByGenre genre ->
     let filtered = filter (\v -> genre == vinylGenre v) (vinylCollection state)

@@ -25,6 +25,8 @@ unitTests =
         Lib2.parseQuery "View all records" @?= Prelude.Right Lib2.ViewAll,
       testCase "Parsing case 6 - Valid Remove command" Prelude.$
         Lib2.parseQuery "Remove Artist_Title_2023_Genre" @?= Prelude.Right (Lib2.Remove (Lib2.Vinyl "Artist" "Title" 2023 "Genre")),
+      testCase "Parsing case 7 - Valid Update command" Prelude.$
+        Lib2.parseQuery "Update Artist_Title_2023_Rock" @?= Prelude.Right (Lib2.Update (Lib2.Vinyl "Artist" "Title" 2023 "Rock")),
       -- State transition tests
       testCase "StateTransition - Add Vinyl to an empty state" Prelude.$ do
         let vinyl = Lib2.Vinyl "Artist" "Title" 2023 "Genre"
@@ -45,5 +47,21 @@ unitTests =
             result = Lib2.stateTransition state Lib2.ViewAll
         case result of
           Prelude.Right (Prelude.Just output, _) -> output @?= Prelude.show [vinyl]
-          _ -> assertFailure "Expected Right result with output showing vinyl records"
+          _ -> assertFailure "Expected Right result with output showing vinyl records",
+      testCase "StateTransition - Update existing Vinyl record" Prelude.$ do
+        let vinylOriginal = Lib2.Vinyl "Artist" "Title" 2023 "Genre"
+            vinylUpdated = Lib2.Vinyl "Artist" "Title" 2023 "Rock"
+            state = Lib2.State [vinylOriginal]
+            result = Lib2.stateTransition state (Lib2.Update vinylUpdated)
+        case result of
+          Prelude.Right (Prelude.Just "Vinyl updated", newState) -> vinylCollection newState @?= [vinylUpdated]
+          _ -> assertFailure "Expected Right result with updated vinyl record",
+      testCase "StateTransition - Update non-existing Vinyl record" Prelude.$ do
+        let vinylOriginal = Lib2.Vinyl "Artist" "Title" 2023 "Genre"
+            vinylNonExistent = Lib2.Vinyl "NonExistentArtist" "NonExistentTitle" 2023 "Rock"
+            state = Lib2.State [vinylOriginal]
+            result = Lib2.stateTransition state (Lib2.Update vinylNonExistent)
+        case result of
+          Prelude.Left err -> err @?= "Vinyl record not found for update"
+          _ -> assertFailure "Expected Left result with error message"
     ]
