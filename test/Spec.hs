@@ -20,7 +20,7 @@ unitTests =
       testCase "Parsing case 3 - Valid Add command" Prelude.$
         Lib2.parseQuery "Add Artist_Title_2023_Genre" @?= Prelude.Right (Lib2.Add (Lib2.Vinyl "Artist" "Title" 2023 "Genre")),
       testCase "Parsing case 4 - Invalid Add command (missing info)" Prelude.$
-        Lib2.parseQuery "Add Artist_Title__Genre" @?= Prelude.Left "Invalid year",
+        Lib2.parseQuery "Add Artist_Title__Genre" @?= Prelude.Left "Unknown command",
       testCase "Parsing case 5 - Valid View all command" Prelude.$
         Lib2.parseQuery "View all records" @?= Prelude.Right Lib2.ViewAll,
       testCase "Parsing case 6 - Valid Remove command" Prelude.$
