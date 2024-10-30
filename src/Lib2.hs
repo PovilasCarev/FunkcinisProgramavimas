@@ -75,7 +75,7 @@ orElse :: Either a b -> Either a b -> Either a b
 orElse (Right x) _ = Right x
 orElse _ r = r
 
--- | Helper function for combining two parsers sequentially.
+-- | Helper function for combining two parsers
 and2 :: (String -> Either String (a, String)) -> (String -> Either String (b, String)) -> String -> Either String ((a, b), String)
 and2 p1 p2 input =
   p1 input >>= \(res1, rest1) ->
@@ -104,8 +104,8 @@ tryParse prefix parser input =
 addParser :: (String -> Either String (a, String)) -> String -> Either String (Maybe a, String)
 addParser parser input =
   case parser input of
-    Left _ -> Right (Nothing, input) -- Return Nothing if parsing fails
-    Right (result, remainder) -> Right (Just result, remainder) -- Return the result and remainder
+    Left _ -> Right (Nothing, input) 
+    Right (result, remainder) -> Right (Just result, remainder) 
 
 -- | <action> ::= "Add" | "Remove" | "Update"
 -- | <vinyl> ::= <artist> "_" <title> "_" <year> "_" <genre>
